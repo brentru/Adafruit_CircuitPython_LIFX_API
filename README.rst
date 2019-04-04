@@ -13,14 +13,19 @@ Introduction
     :target: https://travis-ci.com/adafruit/Adafruit_CircuitPython_lifx
     :alt: Build Status
 
-LIFX Smart Lighting API Helper
-
+Control `LIFX devices<https://www.lifx.com>`_ over the internet using CircuitPython.
 
 Dependencies
 =============
 This driver depends on:
 
 * `Adafruit CircuitPython <https://github.com/adafruit/circuitpython>`_
+
+You'll also need a library to communicate with an ESP32 as a coprocessor using a WiFiManager object. This library supports connecting an ESP32 using either SPI or UART.
+
+* SPI: `Adafruit CircuitPython ESP32SPI <https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI>`_
+
+* UART: `Adafruit CircuitPython ESP_ATcontrol <https://github.com/adafruit/Adafruit_CircuitPython_ESP_ATcontrol>`_
 
 Please ensure all dependencies are available on the CircuitPython filesystem.
 This is easily achieved by downloading
@@ -30,8 +35,6 @@ Installing from PyPI
 --------------------
 .. note:: This library is not available on PyPI yet. Install documentation is included
    as a standard element. Stay tuned for PyPI availability!
-.. todo:: Remove the above note if PyPI version is/will be available at time of release.
-   If the library is not planned for PyPI, remove the entire 'Installing from PyPI' section.
 On supported GNU/Linux systems like the Raspberry Pi, you can install the driver locally `from
 PyPI <https://pypi.org/project/adafruit-circuitpython-lifx/>`_. To install for current user:
 
@@ -57,7 +60,37 @@ To install in a virtual environment in your current project:
 Usage Example
 =============
 
-.. todo:: Add a quick, simple example. It and other examples should live in the examples folder and be included in docs/examples.rst.
+Initialize the LIFX API Client with a WiFiManager object and a
+`LIFX Personal Access token<https://cloud.lifx.com/settings>`_:
+
+.. code-block:: python
+
+    lifx = adafruit_lifx.LIFX(wifi, lifx_token)
+
+Set a `LIFX selector<https://api.developer.lifx.com/docs/selectors>`_ label to identify the LIFX device to communicate with.
+
+.. code-block:: python
+    lifx_light = 'label:Lamp'
+
+List all connected LIFX devices:
+
+.. code-block:: python
+    lights = lifx.list_lights()
+
+Toggle the state of a LIFX device:
+
+.. code-block:: python
+    lifx.toggle_light(lifx_light)
+
+Set the brightness of a LIFX device to 50%:
+
+.. code-block:: python
+    lifx.set_brightness(lifx_light, 0.5)
+
+Set the color of a LIFX device to blue and the brightness to 100%:
+
+.. code-block:: python
+    lifx.set_color(lifx_light, 'on', 'blue', brightness=1.0)
 
 Contributing
 ============
