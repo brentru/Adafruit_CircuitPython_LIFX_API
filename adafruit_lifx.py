@@ -57,7 +57,7 @@ class LIFX:
         """
         wifi_type = str(type(wifi_manager))
         if ('ESPSPI_WiFiManager' in wifi_type or 'ESPAT_WiFiManager' in wifi_type):
-            self.wifi = wifi_manager
+            self._wifi = wifi_manager
         else:
             raise TypeError("This library requires a WiFiManager object.")
         self._lifx_token = lifx_token
@@ -80,16 +80,40 @@ class LIFX:
     def _post(self, path, data):
         """POST data to the LIFX API.
         :param str path: Formatted LIFX API URL
-        :param json data: JSON data to send to the LIFX API.
+        :param json data: JSON data to POST to the LIFX API.
         """
-        response = self.wifi.post(
+        response = self._wifi.post(
             path,
             json=data,
             headers=self._auth_header
         )
-        # handle and parse the response
         response = self._parse_resp(response)
         return response
+    
+    def _put(self, path, data):
+        """PUT data to the LIFX API.
+        :param str path: Formatted LIFX API URL
+        :param json data: JSON data to PUT to the LIFX API.
+        """
+        response = self._wifi.put(
+            path,
+            json=data,
+            headers=self._auth_header
+        )
+        response = self._parse_resp(response)
+        return response
+
+    def _get(self, path, data):
+        """GET data from the LIFX API.
+        :param str path: Formatted LIFX API URL
+        :param json data: JSON data to GET from the LIFX API.
+        """
+        response = self._wifi.get(
+            path,
+            json=data,
+            headers=self._auth_header
+        )
+        return response.json()
 
     def toggle_light(self, selector, all_lights=False, duration=0):
         """Toggles current state of LIFX light(s).
@@ -131,39 +155,23 @@ class LIFX:
         :param dict selector: Selector to control which lights are requested.
         :param double brightness: Brightness level of the light, from 0.0 to 1.0.
         """
-        response = self._wifi.put(
-            url=LIFX_URL+selector+'/state',
-            headers=self._auth_header,
-            json={'brightness':brightness}
-        )
-        resp = response.json()
-        # check the response
-        if response.status_code == 422:
-            raise Exception('Error, light could not be set: '+ resp['error'])
-        response.close()
-        return resp
+        path = LIFX_URL+selector+'/state'
+        data = {'brightness':brightness}
+        return self._put(path, data)
 
-    def set_light(self, selector, power, color, brightness):
-        """Sets the state of the lights within the selector.
+    def set_color(self, selector, power, color, brightness=1.0):
+        """Sets the state of the light's color within the selector.
         :param dict selector: Selector to control which lights are requested.
         :param str power: Sets the power state of the light (on/off).
         :param str color: Color to set the light to (https://api.developer.lifx.com/v1/docs/colors).
-        :param double brightness: Brightness level of the light, from 0.0 to 1.0.
+        :param double brightness: Brightness level of the light from 0.0 to 1.0.
         """
-        response = self._wifi.put(
-            url=LIFX_URL+selector+'/state',
-            headers=self._auth_header,
-            json={'power':power,
-                  'color':color,
-                  'brightness':brightness
-                 }
-        )
-        resp = response.json()
-        # check the response
-        if response.status_code == 422:
-            raise Exception('Error, light could not be set: '+ resp['error'])
-        response.close()
-        return resp
+        path = LIFX_URL+selector+'/state'
+        data = {'power':power,
+                'color':color,
+                'brightness':brightness
+               }
+        return self._put(path, data)
 
     def list_lights(self):
         """Enumerates all the lights associated with the LIFX Cloud Account
@@ -175,5 +183,3 @@ class LIFX:
         resp = response.json()
         response.close()
         return resp
-
-
