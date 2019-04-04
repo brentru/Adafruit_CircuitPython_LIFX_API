@@ -52,7 +52,7 @@ class LIFX:
     def __init__(self, wifi_manager, lifx_token):
         """
         Creates an instance of the LIFX HTTP API client.
-        :param wifi_manager wifi_manager: WiFiManager object from ESPSPI_WiFiManager or ESPAT_WiFiManager
+        :param wifi_manager wifi_manager: WiFiManager from ESPSPI_WiFiManager/ESPAT_WiFiManager
         :param str lifx_token: LIFX API token (https://api.developer.lifx.com/docs/authentication)
         """
         wifi_type = str(type(wifi_manager))
@@ -69,7 +69,7 @@ class LIFX:
         from the LIFX HTTP API.
         """
         if response.status_code == 422:
-            raise Exception('Error: light(s) could not be toggled: '+ resp['error'])
+            raise Exception('Error: light(s) could not be toggled: '+ response['error'])
         try:
             for res in response.json()['results']:
                 return res['status']
@@ -89,7 +89,7 @@ class LIFX:
         )
         response = self._parse_resp(response)
         return response
-    
+
     def _put(self, path, data):
         """PUT data to the LIFX API.
         :param str path: Formatted LIFX API URL
@@ -127,18 +127,16 @@ class LIFX:
         data = {'duration':duration}
         return self._post(path, data)
 
-    def move_effect(self, selector, move_direction, period, cycles, power_on):
+    def move_effect(self, selector, move_direction, period, power_on):
         """Performs a linear move effect on a light, or lights.
         :param str move_direction: Move direction, forward or backward.
         :param double period: Time in second per effect cycle.
-        :param float cycles: Number of times to move the pattern.
         :param bool power_on: Turn on a light before performing the move.
         """
         path = LIFX_URL+selector+'/effects/move'
         data = {'direction':move_direction,
-                    'period':period,
-                    'cycles':cycles,
-                    'power_on':power_on}
+                'period':period,
+                'power_on':power_on}
         return self._post(path, data)
 
     def effects_off(self, selector, power_off=False):
