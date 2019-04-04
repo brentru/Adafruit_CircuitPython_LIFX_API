@@ -99,7 +99,6 @@ class LIFX:
         """
         if all_lights:
             selector = 'all'
-        # compose request URL path
         path = LIFX_URL+selector+'/toggle'
         data = {'duration':duration}
         return self._post(path, data)
@@ -111,35 +110,21 @@ class LIFX:
         :param float cycles: Number of times to move the pattern.
         :param bool power_on: Turn on a light before performing the move.
         """
-        response = self._wifi.post(
-            url=LIFX_URL+selector+'/effects/move',
-            headers = self._auth_header,
-            json = {'direction':move_direction,
+        path = LIFX_URL+selector+'/effects/move'
+        data = {'direction':move_direction,
                     'period':period,
                     'cycles':cycles,
-                    'power_on':power_on},
-        )
-        resp = response.json()
-        # check the response
-        if response.status_code == 422:
-            raise Exception('Error: '+ resp['error'])
-        response.close()
-        return resp
+                    'power_on':power_on}
+        return self._post(path, data)
 
-    def effects_off(self, selector):
+    def effects_off(self, selector, power_off=False):
         """Turns off any running effects on the selected device.
         :param dict selector: Selector to control which lights are requested.
+        :param bool power_off: If true, the devices will also be turned off.
         """
-        response = self._wifi.post(
-            url=LIFX_URL+selector+'/effects/off',
-            headers=self._auth_header
-        )
-        resp = response.json()
-        # check the response
-        if response.status_code == 422:
-            raise Exception('Error: '+ resp['error'])
-        response.close()
-        return resp
+        path = LIFX_URL+selector+'/effects/off'
+        data = {'power_off', power_off}
+        return self._post(path, data)
 
     def set_brightness(self, selector, brightness):
         """Sets the state of the lights within the selector.
