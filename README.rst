@@ -13,7 +13,7 @@ Introduction
     :target: https://travis-ci.com/adafruit/Adafruit_CircuitPython_lifx
     :alt: Build Status
 
-Control `LIFX devices<https://www.lifx.com>`_ over the internet using CircuitPython.
+Control `LIFX devices <https://www.lifx.com>`_ over the internet using CircuitPython.
 
 Dependencies
 =============
@@ -33,8 +33,6 @@ This is easily achieved by downloading
 
 Installing from PyPI
 --------------------
-.. note:: This library is not available on PyPI yet. Install documentation is included
-   as a standard element. Stay tuned for PyPI availability!
 On supported GNU/Linux systems like the Raspberry Pi, you can install the driver locally `from
 PyPI <https://pypi.org/project/adafruit-circuitpython-lifx/>`_. To install for current user:
 
@@ -61,35 +59,40 @@ Usage Example
 =============
 
 Initialize the LIFX API Client with a WiFiManager object and a
-`LIFX Personal Access token<https://cloud.lifx.com/settings>`_:
+`LIFX Personal Access token <https://cloud.lifx.com/settings>`_:
 
 .. code-block:: python
 
     lifx = adafruit_lifx.LIFX(wifi, lifx_token)
 
-Set a `LIFX selector<https://api.developer.lifx.com/docs/selectors>`_ label to identify the LIFX device to communicate with.
+Set a `LIFX selector <https://api.developer.lifx.com/docs/selectors>`_ label to identify the LIFX device to communicate with.
 
 .. code-block:: python
+
     lifx_light = 'label:Lamp'
 
 List all connected LIFX devices:
 
 .. code-block:: python
+
     lights = lifx.list_lights()
 
 Toggle the state of a LIFX device:
 
 .. code-block:: python
+
     lifx.toggle_light(lifx_light)
 
 Set the brightness of a LIFX device to 50%:
 
 .. code-block:: python
+
     lifx.set_brightness(lifx_light, 0.5)
 
 Set the color of a LIFX device to blue and the brightness to 100%:
 
 .. code-block:: python
+
     lifx.set_color(lifx_light, 'on', 'blue', brightness=1.0)
 
 Contributing
