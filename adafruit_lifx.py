@@ -64,26 +64,32 @@ class LIFX:
         self._auth_header = {"Authorization": "Bearer %s" % self._lifx_token,}
 
     @staticmethod
-    def parse_resp(response):
-        """Parses a JSON response returned from the LIFX API
+    def _parse_resp(response):
+        """Parses and returns the JSON response returned
+        from the LIFX HTTP API.
         """
+        if response.status_code == 422:
+            raise Exception('Error: light(s) could not be toggled: '+ resp['error'])
         try:
             for res in response['results']:
-                print(res['status'])
+                return res['status']
         except KeyError:
-            print(response['error'])
+            raise KeyError(response['error'])
 
-
-    def list_lights(self):
-        """Enumerates all the lights associated with the LIFX Cloud Account
+    # HTTP Requests
+    def _post(self, path, data):
+        """POST data to the LIFX API.
+        :param str path: Formatted LIFX API URL
+        :param json data: JSON data to send to the LIFX API.
         """
-        response = self._wifi.get(
-            url=LIFX_URL+'all',
+        response = self.wifi.post(
+            path,
+            json=data,
             headers=self._auth_header
         )
-        resp = response.json()
-        response.close()
-        return resp
+        # handle and parse the response
+        response = self._parse_resp(response)
+        return response
 
     def toggle_light(self, selector, all_lights=False, duration=0):
         """Toggles current state of LIFX light(s).
@@ -93,15 +99,45 @@ class LIFX:
         """
         if all_lights:
             selector = 'all'
+        # compose request URL path
+        path = LIFX_URL+selector+'/toggle'
+        data = {'duration':duration}
+        return self._post(path, data)
+
+    def move_effect(self, selector, move_direction, period, cycles, power_on):
+        """Performs a linear move effect on a light, or lights.
+        :param str move_direction: Move direction, forward or backward.
+        :param double period: Time in second per effect cycle.
+        :param float cycles: Number of times to move the pattern.
+        :param bool power_on: Turn on a light before performing the move.
+        """
         response = self._wifi.post(
-            url=LIFX_URL+selector+'/toggle',
+            url=LIFX_URL+selector+'/effects/move',
             headers = self._auth_header,
-            json = {'duration':duration},
+            json = {'direction':move_direction,
+                    'period':period,
+                    'cycles':cycles,
+                    'power_on':power_on},
         )
         resp = response.json()
         # check the response
         if response.status_code == 422:
-            raise Exception('Error, light(s) could not be toggled: '+ resp['error'])
+            raise Exception('Error: '+ resp['error'])
+        response.close()
+        return resp
+
+    def effects_off(self, selector):
+        """Turns off any running effects on the selected device.
+        :param dict selector: Selector to control which lights are requested.
+        """
+        response = self._wifi.post(
+            url=LIFX_URL+selector+'/effects/off',
+            headers=self._auth_header
+        )
+        resp = response.json()
+        # check the response
+        if response.status_code == 422:
+            raise Exception('Error: '+ resp['error'])
         response.close()
         return resp
 
@@ -144,39 +180,15 @@ class LIFX:
         response.close()
         return resp
 
-    def move_effect(self, selector, move_direction, period, cycles, power_on):
-        """Performs a linear move effect on a light, or lights.
-        :param str move_direction: Move direction, forward or backward.
-        :param double period: Time in second per effect cycle.
-        :param float cycles: Number of times to move the pattern.
-        :param bool power_on: Turn on a light before performing the move.
+    def list_lights(self):
+        """Enumerates all the lights associated with the LIFX Cloud Account
         """
-        response = self._wifi.post(
-            url=LIFX_URL+selector+'/effects/move',
-            headers = self._auth_header,
-            json = {'direction':move_direction,
-                    'period':period,
-                    'cycles':cycles,
-                    'power_on':power_on},
-        )
-        resp = response.json()
-        # check the response
-        if response.status_code == 422:
-            raise Exception('Error: '+ resp['error'])
-        response.close()
-        return resp
-
-    def effects_off(self, selector):
-        """Turns off any running effects on the selected device.
-        :param dict selector: Selector to control which lights are requested.
-        """
-        response = self._wifi.post(
-            url=LIFX_URL+selector+'/effects/off',
+        response = self._wifi.get(
+            url=LIFX_URL+'all',
             headers=self._auth_header
         )
         resp = response.json()
-        # check the response
-        if response.status_code == 422:
-            raise Exception('Error: '+ resp['error'])
         response.close()
         return resp
+
+
