@@ -49,10 +49,10 @@ class LIFX:
     """
     HTTP Interface for interacting with the LIFX API
     """
-    def __init__(self, wifi, lifx_token):
+    def __init__(self, wifi_manager, lifx_token):
         """
         Creates an instance of the LIFX HTTP API client.
-        :param wifi_manager wifi: WiFiManager object from ESPSPI_WiFiManager or ESPAT_WiFiManager
+        :param wifi_manager wifi_manager: WiFiManager object from ESPSPI_WiFiManager or ESPAT_WiFiManager
         :param str lifx_token: LIFX API token (https://api.developer.lifx.com/docs/authentication)
         """
         wifi_type = str(type(wifi_manager))
@@ -71,10 +71,10 @@ class LIFX:
         if response.status_code == 422:
             raise Exception('Error: light(s) could not be toggled: '+ resp['error'])
         try:
-            for res in response['results']:
+            for res in response.json()['results']:
                 return res['status']
         except KeyError:
-            raise KeyError(response['error'])
+            raise KeyError(response.json()['error'])
 
     # HTTP Requests
     def _post(self, path, data):
